@@ -17,21 +17,21 @@ cp .env.sample .env
 
 ## Development
 
-## Compile
+### Compile
 
 ```bash
 forge build --sizes
 ```
 
-## Test
+### Test
 
-### with printing execution traces for failing tests
+#### with printing execution traces for failing tests
 
 ```bash
 forge test --vvv
 ```
 
-### with gas report
+#### with gas reporting
 
 ```bash
 forge test --gas-report
