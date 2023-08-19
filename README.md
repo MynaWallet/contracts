@@ -1,66 +1,38 @@
-## Foundry
+# MynaWallet
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
 
-Foundry consists of:
+MynaWallet smart contract is a contract account that complies with [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337). It approves operations described in `UserOperation` by verifying RSA signatures.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Preparation
 
-## Documentation
+The MynaWallet smart contract is developed using [Foundry](https://book.getfoundry.sh/getting-started/installation). Please build the [Foundry](https://book.getfoundry.sh/getting-started/installation) development environment according to the procedures in the linked page.
 
-https://book.getfoundry.sh/
+Make a copy of `.env.sample` and name it `.env`. Then, please set the environment variables according to the comments in the file. Please do not edit `.env.sample` directly as it is a sample file.
 
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```bash
+cp .env.sample .env
+# Then edit .env
 ```
 
-### Test
+## Development
 
-```shell
-$ forge test
+## Compile
+
+```bash
+forge build --sizes
 ```
 
-### Format
+## Test
 
-```shell
-$ forge fmt
+### with printing execution traces for failing tests
+
+```bash
+forge test --vvv
 ```
 
-### Gas Snapshots
+### with gas report
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+```bash
+forge test --gas-report
 ```
