@@ -7,7 +7,7 @@ import "@account-abstraction/contracts/core/BaseAccount.sol";
 import {SolRsaVerify} from "../libraries/RsaVerify.sol";
 
 /// @title MynaWallet
-/// @author a42
+/// @author a42x
 /// @notice You can use this contract for ERC-4337 compiant wallet which works with My Number Card
 contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
     using SolRsaVerify for bytes32;
