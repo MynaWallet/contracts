@@ -6,9 +6,9 @@ MynaWallet smart contract is a contract account that complies with [ERC-4337](ht
 
 ## Preparation
 
-The MynaWallet smart contract is developed using [Foundry](https://book.getfoundry.sh/getting-started/installation). Please build the [Foundry](https://book.getfoundry.sh/getting-started/installation) development environment according to the procedures in the linked page.
+MynaWallet smart contract is developed using [Foundry](https://book.getfoundry.sh/getting-started/installation). Please build the [Foundry](https://book.getfoundry.sh/getting-started/installation) development environment according to the procedures in the linked page. After that, clone this repository with submodules.
 
-Make a copy of `.env.sample` and name it `.env`. Then, please set the environment variables according to the comments in the file. Please do not edit `.env.sample` directly as it is a sample file.
+ Make a copy of `.env.sample` and name it `.env`. Then, please set the environment variables according to the comments in the file. Please do not edit `.env.sample` directly as it is a sample file.
 
 ```bash
 cp .env.sample .env
