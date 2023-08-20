@@ -12,10 +12,39 @@ MynaWallet smart contract is developed using [Foundry](https://book.getfoundry.s
 
 ```bash
 cp .env.sample .env
-# Then edit .env
+# Then edit .env with your favorite editor.
 ```
 
 ## Development
+
+### Local Development
+
+#### Start a local node
+
+You can start a local node with the following command. The node will provide a JSON-RPC endpoint at `http://localhost:8545` and test accounts.
+
+```bash
+anvil
+```
+
+Edit .env file to set `PRIVATE_KEY` from the given test account and reload .env file.
+```bash
+source .env
+```
+
+#### Deploy to local node
+
+```bash
+forge script script/Deploy.s.sol:DeployLocal --broadcast --rpc-url ${LOCAL_RPC_URL}
+```
+
+#### Debugging
+
+For example, you can call `accountImplementation()` function to get the address of the account implementation address. Replace `YOUR_DEPLOYED_FACTORY_CONTRACT_ADDRESS` with the address of the deployed contract. For more information, please refer to [Cast](https://book.getfoundry.sh/cast/).
+
+```bash
+cast call YOUR_DEPLOYED_FACTORY_CONTRACT_ADDRESS "accountImplementation()(address)" --rpc-url ${LOCAL_RPC_URL}
+```
 
 ### Compile
 
