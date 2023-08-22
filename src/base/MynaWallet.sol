@@ -4,7 +4,8 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@account-abstraction/contracts/core/BaseAccount.sol";
-import {SolRsaVerify} from "../libraries/RsaVerify.sol";
+import {SolRsaVerify} from "@libraries/RsaVerify.sol";
+import {Errors} from "@libraries/Errors.sol";
 
 /// @title MynaWallet
 /// @author a42x
@@ -74,7 +75,7 @@ contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
      */
     function executeBatch(address[] calldata dest, bytes[] calldata func) external {
         _requireFromEntryPoint();
-        require(dest.length == func.length, "MynaWallet: wrong array lengths");
+        if (dest.length != func.length) revert Errors.InvalidArrayLength(dest.length, func.length);
         for (uint256 i = 0; i < dest.length; i++) {
             _call(dest[i], 0, func[i]);
         }
@@ -128,7 +129,7 @@ contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
      */
     function _requireFromSelf() internal view {
         //directly through the account
-        require(msg.sender == address(this), "MynaWallet: not from account");
+        if (msg.sender != address(this)) revert Errors.NotFromAccount(msg.sender);
     }
 
     /**
