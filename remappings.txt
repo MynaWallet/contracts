@@ -6,3 +6,5 @@ openzeppelin-contracts/=lib/openzeppelin-contracts/
 openzeppelin/=lib/openzeppelin-contracts/contracts/
 @account-abstraction/=lib/account-abstraction/
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@libraries/=src/libraries/
+@base/=src/base/
