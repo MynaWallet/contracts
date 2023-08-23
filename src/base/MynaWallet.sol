@@ -4,30 +4,25 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@account-abstraction/contracts/core/BaseAccount.sol";
+import "@managers/OwnerManager.sol";
 import {SolRsaVerify} from "@libraries/RsaVerify.sol";
 import {Errors} from "@libraries/Errors.sol";
 
 /// @title MynaWallet
 /// @author a42x
 /// @notice You can use this contract for ERC-4337 compiant wallet which works with My Number Card
-contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
+contract MynaWallet is BaseAccount, OwnerManager, UUPSUpgradeable, Initializable {
     using SolRsaVerify for bytes32;
 
     /// @notice Exponent of the RSA public key
     bytes internal constant _EXPONENT =
         hex"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010001";
 
-    /// @notice Part of the RSA public key which can operate this contract
-    bytes public modulus;
-
     /// @notice EntryPoint contract address that can operate this contract
     IEntryPoint private immutable _entryPoint;
 
     /// @notice Event which will be emitted when this contract is initalized
     event MynaWalletInitialized(IEntryPoint indexed entryPoint, bytes modulus);
-
-    /// @notice Event which will be emmited when this contract owner is changed
-    event MynaWalletRecovered(bytes modulus);
 
     /// @inheritdoc BaseAccount
     function entryPoint() public view virtual override returns (IEntryPoint) {
@@ -75,7 +70,7 @@ contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
      */
     function executeBatch(address[] calldata dest, bytes[] calldata func) external {
         _requireFromEntryPoint();
-        if (dest.length != func.length) revert Errors.InvalidArrayLength(dest.length, func.length);
+        if (dest.length != func.length) revert Errors.INVALID_ARRAY_LENGTH(dest.length, func.length);
         for (uint256 i = 0; i < dest.length; i++) {
             _call(dest[i], 0, func[i]);
         }
@@ -124,12 +119,20 @@ contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
     }
 
     /**
+     * @notice Check if the caller is entryPoint
+     * @dev Internal function
+     */
+    function _requireFromEntryPoint() internal view override {
+        if (msg.sender != address(entryPoint())) revert Errors.CALLER_MUST_BE_ENTRYPOINT(msg.sender);
+    }
+
+    /**
      * @notice Check if the caller is self
      * @dev Internal function
      */
     function _requireFromSelf() internal view {
         //directly through the account
-        if (msg.sender != address(this)) revert Errors.NotFromAccount(msg.sender);
+        if (msg.sender != address(this)) revert Errors.CALLER_MUST_BE_SELF(msg.sender);
     }
 
     /**
@@ -138,7 +141,7 @@ contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
      * @param newModulus modulus of the RSA public key which can operate this contract
      */
     function _initialize(bytes memory newModulus) internal virtual {
-        modulus = newModulus;
+        _setOwner(newModulus);
         emit MynaWalletInitialized(_entryPoint, newModulus);
     }
 
@@ -156,7 +159,7 @@ contract MynaWallet is BaseAccount, UUPSUpgradeable, Initializable {
         returns (uint256 validationData)
     {
         bytes32 hashed = sha256(abi.encode(userOpHash));
-        uint256 ret = verifyPkcs1Sha256(hashed, userOp.signature, _EXPONENT, modulus);
+        uint256 ret = verifyPkcs1Sha256(hashed, userOp.signature, _EXPONENT, getOwner());
         if (ret != 0) return SIG_VALIDATION_FAILED;
     }
 
