@@ -5,5 +5,5 @@ library Errors {
     error CALLER_MUST_BE_ENTRYPOINT(address sender);
     error CALLER_MUST_BE_SELF(address sender);
     error INVALID_ARRAY_LENGTH(uint256 destLength, uint256 funcLength);
-    error INVALID_MODULUS_LENGTH(uint256 length);
+    error INVALID_MODULUS(bytes modulus);
 }

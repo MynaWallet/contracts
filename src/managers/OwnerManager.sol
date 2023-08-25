@@ -19,7 +19,7 @@ abstract contract OwnerManager {
 
     function _setOwner(bytes memory newOwner) internal {
         if (newOwner.length != _MODULUS_LENGTH) {
-            revert Errors.INVALID_MODULUS_LENGTH(newOwner.length);
+            revert Errors.INVALID_MODULUS(newOwner);
         }
         bytes memory oldOwner = AccountStorage.layout().owner;
         AccountStorage.layout().owner = newOwner;
