@@ -3,8 +3,9 @@ pragma solidity ^0.8.19;
 
 import "@libraries/AccountStorage.sol";
 import "@libraries/Errors.sol";
+import "@auth/OwnerAuth.sol";
 
-abstract contract OwnerManager {
+abstract contract OwnerManager is OwnerAuth {
     uint256 private constant _MODULUS_LENGTH = 256;
 
     event OwnerChanged(bytes newOwner, bytes oldOwner);
@@ -26,7 +27,7 @@ abstract contract OwnerManager {
         emit OwnerChanged(newOwner, oldOwner);
     }
 
-    function _isOwner(bytes memory modulus) internal view returns (bool) {
+    function _isOwner(bytes memory modulus) internal view override returns (bool) {
         return keccak256(AccountStorage.layout().owner) == keccak256(modulus);
     }
 }

@@ -10,3 +10,4 @@ openzeppelin/=lib/openzeppelin-contracts/contracts/
 @base/=src/base/
 @managers/=src/managers/
 @interfaces/=src/interfaces/
+@auth/=src/auth/
