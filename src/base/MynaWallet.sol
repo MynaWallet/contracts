@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@account-abstraction/contracts/core/BaseAccount.sol";
+import "@account-abstraction/contracts/samples/callback/TokenCallbackHandler.sol";
 import "@managers/OwnerManager.sol";
 import {SolRsaVerify} from "@libraries/RsaVerify.sol";
 import {Errors} from "@libraries/Errors.sol";
@@ -11,7 +12,7 @@ import {Errors} from "@libraries/Errors.sol";
 /// @title MynaWallet
 /// @author a42x
 /// @notice You can use this contract for ERC-4337 compiant wallet which works with My Number Card
-contract MynaWallet is BaseAccount, OwnerManager, UUPSUpgradeable, Initializable {
+contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgradeable, Initializable {
     using SolRsaVerify for bytes32;
 
     /// @notice Exponent of the RSA public key
