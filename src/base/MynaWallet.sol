@@ -71,7 +71,7 @@ contract MynaWallet is
      * @param func function call data
      */
     function executeBatch(address[] calldata dest, bytes[] calldata func) external onlyEntryPoint {
-        if (dest.length != func.length) revert Errors.INVALID_ARRAY_LENGTH(dest.length, func.length);
+        if (dest.length != func.length) revert Errors.INVALID_ARRAY_LENGTH(dest.length, 0, func.length);
         for (uint256 i = 0; i < dest.length;) {
             _call(dest[i], 0, func[i]);
             unchecked {
@@ -90,6 +90,9 @@ contract MynaWallet is
         external
         onlyEntryPoint
     {
+        if (dest.length != value.length || value.length != func.length) {
+            revert Errors.INVALID_ARRAY_LENGTH(dest.length, value.length, func.length);
+        }
         for (uint256 i = 0; i < dest.length;) {
             _call(dest[i], value[i], func[i]);
             unchecked {
