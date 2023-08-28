@@ -4,31 +4,33 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@account-abstraction/contracts/core/BaseAccount.sol";
+import "@auth/Auth.sol";
 import "@account-abstraction/contracts/samples/callback/TokenCallbackHandler.sol";
 import "@managers/OwnerManager.sol";
+import "@managers/EntryPointManager.sol";
 import {SolRsaVerify} from "@libraries/RsaVerify.sol";
 import {Errors} from "@libraries/Errors.sol";
 
 /// @title MynaWallet
 /// @author a42x
 /// @notice You can use this contract for ERC-4337 compiant wallet which works with My Number Card
-contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgradeable, Initializable {
+contract MynaWallet is
+    BaseAccount,
+    Auth,
+    EntryPointManager,
+    OwnerManager,
+    TokenCallbackHandler,
+    UUPSUpgradeable,
+    Initializable
+{
     using SolRsaVerify for bytes32;
 
     /// @notice Exponent of the RSA public key
     bytes internal constant _EXPONENT =
         hex"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010001";
 
-    /// @notice EntryPoint contract address that can operate this contract
-    IEntryPoint private immutable _entryPoint;
-
-    /// @notice Event which will be emitted when this contract is initalized
+    // @notice Event which will be emitted when this contract is initalized
     event MynaWalletInitialized(IEntryPoint indexed entryPoint, bytes modulus);
-
-    /// @inheritdoc BaseAccount
-    function entryPoint() public view virtual override returns (IEntryPoint) {
-        return _entryPoint;
-    }
 
     /// @notice recieve fallback function
     receive() external payable {}
@@ -38,8 +40,7 @@ contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgr
      * @dev Cusntuctor is only used when factory is deployed and the facotry holds wallet implementation address
      * @param newEntryPoint EntryPoint contract address that can operate this contract
      */
-    constructor(IEntryPoint newEntryPoint) {
-        _entryPoint = newEntryPoint;
+    constructor(IEntryPoint newEntryPoint) EntryPointManager(newEntryPoint) {
         _disableInitializers();
     }
 
@@ -49,8 +50,9 @@ contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgr
      * the implementation by calling `upgradeTo()`
      * @param newModulus modulus of the RSA public key which can operate this contract
      */
-    function initialize(bytes memory newModulus) public virtual initializer {
-        _initialize(newModulus);
+    function initialize(bytes memory newModulus) external initializer {
+        _setOwner(newModulus);
+        emit MynaWalletInitialized(entryPoint(), newModulus);
     }
 
     /**
@@ -59,8 +61,7 @@ contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgr
      * @param value value to send
      * @param func function call data
      */
-    function execute(address dest, uint256 value, bytes calldata func) external {
-        _requireFromEntryPoint();
+    function execute(address dest, uint256 value, bytes calldata func) external onlyEntryPoint {
         _call(dest, value, func);
     }
 
@@ -69,11 +70,34 @@ contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgr
      * @param dest target addresses
      * @param func function call data
      */
-    function executeBatch(address[] calldata dest, bytes[] calldata func) external {
-        _requireFromEntryPoint();
-        if (dest.length != func.length) revert Errors.INVALID_ARRAY_LENGTH(dest.length, func.length);
-        for (uint256 i = 0; i < dest.length; i++) {
+    function executeBatch(address[] calldata dest, bytes[] calldata func) external onlyEntryPoint {
+        if (dest.length != func.length) revert Errors.INVALID_ARRAY_LENGTH(dest.length, 0, func.length);
+        for (uint256 i = 0; i < dest.length;) {
             _call(dest[i], 0, func[i]);
+            unchecked {
+                i++;
+            }
+        }
+    }
+
+    /**
+     * execute a sequence of transactions
+     * @param dest target addreses
+     * @param value value to send
+     * @param func function call data
+     */
+    function executeBatch(address[] calldata dest, uint256[] calldata value, bytes[] calldata func)
+        external
+        onlyEntryPoint
+    {
+        if (dest.length != value.length || value.length != func.length) {
+            revert Errors.INVALID_ARRAY_LENGTH(dest.length, value.length, func.length);
+        }
+        for (uint256 i = 0; i < dest.length;) {
+            _call(dest[i], value[i], func[i]);
+            unchecked {
+                i++;
+            }
         }
     }
 
@@ -90,9 +114,16 @@ contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgr
      * @param withdrawAddress target to send to
      * @param amount to withdraw
      */
-    function withdrawDepositTo(address payable withdrawAddress, uint256 amount) public {
-        _requireFromSelf();
+    function withdrawDepositTo(address payable withdrawAddress, uint256 amount) public onlySelf {
         entryPoint().withdrawTo(withdrawAddress, amount);
+    }
+
+    /**
+     * @notice Get the entryPoint contract address
+     * @return entryPoint contract address
+     */
+    function entryPoint() public view override(BaseAccount) returns (IEntryPoint) {
+        return EntryPointManager._entryPoint();
     }
 
     /**
@@ -117,33 +148,6 @@ contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgr
         returns (uint256)
     {
         return hashed.pkcs1Sha256Verify(sig, exp, mod);
-    }
-
-    /**
-     * @notice Check if the caller is entryPoint
-     * @dev Internal function
-     */
-    function _requireFromEntryPoint() internal view override {
-        if (msg.sender != address(entryPoint())) revert Errors.CALLER_MUST_BE_ENTRYPOINT(msg.sender);
-    }
-
-    /**
-     * @notice Check if the caller is self
-     * @dev Internal function
-     */
-    function _requireFromSelf() internal view {
-        //directly through the account
-        if (msg.sender != address(this)) revert Errors.CALLER_MUST_BE_SELF(msg.sender);
-    }
-
-    /**
-     * @notice Initialize the contract implementation for each proxy contract
-     * @dev Each proxy contract must not call constuctor but call initialize once after deployment,
-     * @param newModulus modulus of the RSA public key which can operate this contract
-     */
-    function _initialize(bytes memory newModulus) internal virtual {
-        _setOwner(newModulus);
-        emit MynaWalletInitialized(_entryPoint, newModulus);
     }
 
     /**
@@ -180,8 +184,7 @@ contract MynaWallet is BaseAccount, OwnerManager, TokenCallbackHandler, UUPSUpgr
         }
     }
 
-    function _authorizeUpgrade(address newImplementation) internal view override {
+    function _authorizeUpgrade(address newImplementation) internal view override onlySelf {
         (newImplementation);
-        _requireFromSelf();
     }
 }
