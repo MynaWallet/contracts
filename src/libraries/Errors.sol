@@ -6,4 +6,6 @@ library Errors {
     error CALLER_MUST_BE_SELF(address sender);
     error INVALID_ARRAY_LENGTH(uint256 destLength, uint256 valueLength, uint256 funcLength);
     error INVALID_MODULUS(bytes modulus);
+    error HASH_ALREADY_APPROVED(bytes32 hash);
+    error HASH_ALREADY_REJECTED(bytes32 hash);
 }

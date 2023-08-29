@@ -8,11 +8,13 @@ library AccountStorage {
         // base account storage
         bytes owner;
         uint256[50] gap0;
-
-        // TODO session key storage
-
-        // TODO recovery key storage
+        // EIP1271
+        mapping(bytes32 => uint256) approvedHashes;
     }
+
+    // TODO session key storage
+
+    // TODO recovery key storage
 
     function layout() internal pure returns (Layout storage l) {
         bytes32 slot = _ACCOUNT_SLOT;

@@ -8,6 +8,7 @@ import "@auth/Auth.sol";
 import "@account-abstraction/contracts/samples/callback/TokenCallbackHandler.sol";
 import "@managers/OwnerManager.sol";
 import "@managers/EntryPointManager.sol";
+import "@managers/EIP1271Manager.sol";
 import {SolRsaVerify} from "@libraries/RsaVerify.sol";
 import {Errors} from "@libraries/Errors.sol";
 
@@ -19,6 +20,7 @@ contract MynaWallet is
     Auth,
     EntryPointManager,
     OwnerManager,
+    EIP1271Manager,
     TokenCallbackHandler,
     UUPSUpgradeable,
     Initializable
