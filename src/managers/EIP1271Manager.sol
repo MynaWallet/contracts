@@ -14,9 +14,9 @@ abstract contract EIP1271Manager is Auth, OwnerManager {
     // EIP1271: Standard Signature Validation Method for Contracts
     // https://eips.ethereum.org/EIPS/eip-1271
     // Below constants are defined in the EIP1271
-    bytes4 internal constant MAGICVALUE = 0x1626ba7e;
-    bytes4 internal constant INVALID_ID = 0xffffffff;
-    bytes4 internal constant INVALID_TIME_RANGE = 0xfffffffe;
+    bytes4 internal constant _MAGICVALUE = 0x1626ba7e;
+    bytes4 internal constant _INVALID_ID = 0xffffffff;
+    bytes4 internal constant _INVALID_TIME_RANGE = 0xfffffffe;
 
     event ApproveHash(bytes32 hash);
     event RejectHash(bytes32 hash);
@@ -43,26 +43,26 @@ abstract contract EIP1271Manager is Auth, OwnerManager {
         if (signature.length > 0) {
             (uint256 _validationData, bool sigValid) = _isValidSignature(hash, signature);
             if (!sigValid) {
-                return INVALID_ID;
+                return _INVALID_ID;
             }
             if (_validationData > 0) {
                 ValidationData memory validationData = _parseValidationData(_validationData);
                 bool outOfTimeRange =
                     (block.timestamp > validationData.validUntil) || (block.timestamp < validationData.validAfter);
                 if (outOfTimeRange) {
-                    return INVALID_TIME_RANGE;
+                    return _INVALID_TIME_RANGE;
                 }
             }
-            return MAGICVALUE;
+            return _MAGICVALUE;
         }
 
         mapping(bytes32 => uint256) storage approvedHashes = _approvedHashes();
         uint256 status = approvedHashes[hash];
         if (status == 1) {
             // approved
-            return MAGICVALUE;
+            return _MAGICVALUE;
         } else {
-            return INVALID_ID;
+            return _INVALID_ID;
         }
     }
 
@@ -79,11 +79,12 @@ abstract contract EIP1271Manager is Auth, OwnerManager {
         if (signature.length == 256) {
             return (0, hash.pkcs1Sha256Verify(signature, exponent, modulus) == 0);
         } else {
-            // extract validation data - 32 bytes
+            // extract validation data - first 32 bytes is the validation data
             validationData = abi.decode(signature[0:32], (uint256));
-            // extract signature - 256 bytes
-            signature = signature[33:];
-            return (validationData, hash.pkcs1Sha256Verify(signature, exponent, modulus) == 0);
+
+            // extract signature - 256 bytes after the validation data is the signature
+            signature = signature[32:288];
+            isValid = hash.pkcs1Sha256Verify(signature, exponent, modulus) == 0;
         }
     }
 }
