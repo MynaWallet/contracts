@@ -8,6 +8,7 @@ import "@auth/Auth.sol";
 import "@account-abstraction/contracts/samples/callback/TokenCallbackHandler.sol";
 import "@managers/OwnerManager.sol";
 import "@managers/EntryPointManager.sol";
+import "@managers/EIP1271Manager.sol";
 import {SolRsaVerify} from "@libraries/RsaVerify.sol";
 import {Errors} from "@libraries/Errors.sol";
 
@@ -19,15 +20,12 @@ contract MynaWallet is
     Auth,
     EntryPointManager,
     OwnerManager,
+    EIP1271Manager,
     TokenCallbackHandler,
     UUPSUpgradeable,
     Initializable
 {
     using SolRsaVerify for bytes32;
-
-    /// @notice Exponent of the RSA public key
-    bytes internal constant _EXPONENT =
-        hex"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010001";
 
     // @notice Event which will be emitted when this contract is initalized
     event MynaWalletInitialized(IEntryPoint indexed entryPoint, bytes modulus);
@@ -164,7 +162,8 @@ contract MynaWallet is
         returns (uint256 validationData)
     {
         bytes32 hashed = sha256(abi.encode(userOpHash));
-        uint256 ret = verifyPkcs1Sha256(hashed, userOp.signature, _EXPONENT, getOwner());
+        (bytes memory modulus, bytes memory exponent) = getOwner();
+        uint256 ret = verifyPkcs1Sha256(hashed, userOp.signature, exponent, modulus);
         if (ret != 0) return SIG_VALIDATION_FAILED;
     }
 

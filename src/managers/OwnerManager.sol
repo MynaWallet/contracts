@@ -7,11 +7,14 @@ import "@auth/OwnerAuth.sol";
 
 abstract contract OwnerManager is OwnerAuth {
     uint256 private constant _MODULUS_LENGTH = 256;
+    /// @notice Exponent of the RSA public key
+    bytes internal constant _EXPONENT =
+        hex"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010001";
 
     event OwnerChanged(bytes newOwner, bytes oldOwner);
 
-    function getOwner() public view returns (bytes memory) {
-        return AccountStorage.layout().owner;
+    function getOwner() public view returns (bytes memory owner, bytes memory exponent) {
+        return (AccountStorage.layout().owner, _EXPONENT);
     }
 
     function isOwner(bytes memory modulus) public view returns (bool) {
