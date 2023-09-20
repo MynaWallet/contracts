@@ -18,27 +18,6 @@ abstract contract EIP1271Manager is Auth, OwnerManager {
     bytes4 internal constant _INVALID_ID = 0xffffffff;
     bytes4 internal constant _INVALID_TIME_RANGE = 0xfffffffe;
 
-    event ApproveHash(bytes32 hash);
-    event RejectHash(bytes32 hash);
-
-    function approveHash(bytes32 hash) external onlySelf {
-        mapping(bytes32 => uint256) storage approvedHashes = _approvedHashes();
-        if (approvedHashes[hash] == 1) {
-            revert Errors.HASH_ALREADY_APPROVED(hash);
-        }
-        approvedHashes[hash] = 1;
-        emit ApproveHash(hash);
-    }
-
-    function rejectHash(bytes32 hash) external onlySelf {
-        mapping(bytes32 => uint256) storage approvedHashes = _approvedHashes();
-        if (approvedHashes[hash] == 0) {
-            revert Errors.HASH_ALREADY_REJECTED(hash);
-        }
-        approvedHashes[hash] = 0;
-        emit RejectHash(hash);
-    }
-
     function isValidSignature(bytes32 hash, bytes calldata signature) external view returns (bytes4 magicValue) {
         if (signature.length > 0) {
             (uint256 _validationData, bool sigValid) = _isValidSignature(hash, signature);
@@ -54,20 +33,9 @@ abstract contract EIP1271Manager is Auth, OwnerManager {
                 }
             }
             return _MAGICVALUE;
-        }
-
-        mapping(bytes32 => uint256) storage approvedHashes = _approvedHashes();
-        uint256 status = approvedHashes[hash];
-        if (status == 1) {
-            // approved
-            return _MAGICVALUE;
         } else {
             return _INVALID_ID;
         }
-    }
-
-    function _approvedHashes() private view returns (mapping(bytes32 => uint256) storage) {
-        return AccountStorage.layout().approvedHashes;
     }
 
     function _isValidSignature(bytes32 hash, bytes calldata signature)

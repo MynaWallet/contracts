@@ -8,9 +8,6 @@ library AccountStorage {
         // base account storage
         bytes owner;
         uint256[50] gap0;
-        // EIP1271
-        mapping(bytes32 => uint256) approvedHashes;
-        uint256[50] gap1;
     }
 
     // TODO session key storage
