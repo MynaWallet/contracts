@@ -24,6 +24,11 @@ contract DeployTest is Test {
     }
 
     function testDeploy() public {
+        // fix block number
+        vm.warp(1641070800);
+        // fix chainId
+        vm.chainId(31337);
+
         address sender;
         uint256 nonce;
         bytes memory initCode;
@@ -58,7 +63,7 @@ contract DeployTest is Test {
         bytes memory executeCall =
             abi.encodeWithSignature("execute(address,uint256,bytes)", address(alice), 1 ether, callData);
 
-        // 3 generate UserOperation
+        // construct UserOperation
         UserOperation memory userOperation = UserOperation(
             sender,
             nonce,
@@ -73,20 +78,22 @@ contract DeployTest is Test {
             signature
         );
 
-        // bytes32 userOpHash = entryPoint.getUserOpHash(userOperation);
-        // console.logBytes32(userOpHash);
+        bytes32 userOpHash = entryPoint.getUserOpHash(userOperation);
+        console.logBytes32(userOpHash);
 
-        // 4 set actual signature
+        // set actual signature
         signature =
-            hex"862ed5b03b54d069bc6fab63502b9942f6b3cf9f8e52c4e4fef90082d399b612e543eebb68d07436c84a11ddae82072ccbd9f645afff3ec6f2e8f2445bbbdb83bfa831befcad9f3c2191dde1b96941ffebd2377218ac2bac2f27752dda1e28ba46710682411d8e169c353824fb0eda3c8d7cbf309099bf53611da27a95841ef5c3b6f21b1e0b16f7f1484f28d1f34e22736b8699da82c01047a2a6bdb942fe10d6e3ff28246da3bd7c35e1edde9a720a7fe609a5dda2ba59b800064ccd41b55bac55da1ce79cdf4e210349dd9be94e71c1c65198c48914221ab22ad67bd55ecfecdda788c2d69450ae877c59cc7ad22e304b97a253d845482f12041b5df0cc1d";
+            hex"1f546bf45c855723d8b92fd479bdb601e7816945f50f7f499a778498d79460b573a1e70763bbf5197a4be2d2ecdefe3fa2bf3eea8166757ebe77a509e57a59fe089ac0cd5c95613e895b94994583925473077b9357c146c476a58b5ee86a5166f827bb2c4f34a8955ee42eab104ad91703e1fbd8e3ad65506540276c81feace1db614ec8b4a09a17bf93043f75480004df161cd093c5f303fbc915371692f24fcf41bce1b96ef1497d8907d571097f26bb4c878e01a68bccd7fb1daf040b7cc5a964f3cf2e92209f4febcc63f20dc40f4a4d6dfda112f1200a9064396bed9732122633bc77e9467136d7082f1edc59a6197016fa8f2be686405a2dd26be00dae";
         userOperation.signature = signature;
 
         UserOperation[] memory userOperations = new UserOperation[](1);
         userOperations[0] = userOperation;
 
+        // deposit ether
         vm.deal(sender, 42 ether);
         vm.deal(bundler, 1 ether);
 
+        // execute as bundler
         vm.startPrank(bundler);
         entryPoint.handleOps(userOperations, payable(bundler));
         vm.stopPrank();
