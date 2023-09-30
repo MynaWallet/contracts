@@ -183,7 +183,13 @@ contract MynaWallet is
         }
     }
 
+    /**
+     * @notice Upgrade this contract to a new implementation
+     * @dev Internal function
+     * @param newImplementation new implementation address
+     */
     function _authorizeUpgrade(address newImplementation) internal view override onlySelf {
+        // TODO add time lock?
         (newImplementation);
     }
 }

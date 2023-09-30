@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.19;
 
+/// @title Errors contract
+/// @author a42x
+/// @notice You can use this contract for errors
 library Errors {
     error CALLER_MUST_BE_ENTRYPOINT(address sender);
     error CALLER_MUST_BE_SELF(address sender);
