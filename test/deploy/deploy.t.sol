@@ -98,9 +98,9 @@ contract DeployTest is Test {
         entryPoint.handleOps(userOperations, payable(bundler));
         vm.stopPrank();
 
-        // check if the contract is not yet deployed
+        // check if the contract is deployed
         assertTrue(sender.code.length != 0, "A2:sender.code.length == 0");
         // check if alice has 1 ether
-        assertTrue(alice.balance >= 1 ether, "A3:alice.balance != 1 ether");
+        assertTrue(alice.balance == 1 ether, "A3:alice.balance != 1 ether");
     }
 }
