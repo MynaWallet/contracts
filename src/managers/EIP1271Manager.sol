@@ -11,13 +11,19 @@ import {SolRsaVerify} from "@libraries/RsaVerify.sol";
 abstract contract EIP1271Manager is Auth, OwnerManager {
     using SolRsaVerify for bytes32;
 
-    // EIP1271: Standard Signature Validation Method for Contracts
-    // https://eips.ethereum.org/EIPS/eip-1271
-    // Below constants are defined in the EIP1271
+    /// @notice EIP1271: Standard Signature Validation Method for Contracts
+    /// https://eips.ethereum.org/EIPS/eip-1271
     bytes4 internal constant _MAGICVALUE = 0x1626ba7e;
     bytes4 internal constant _INVALID_ID = 0xffffffff;
     bytes4 internal constant _INVALID_TIME_RANGE = 0xfffffffe;
 
+    /**
+     * @notice Verify if the signature is valid
+     * @dev we update the signature validation logic to support time range validation
+     * @param hash Hash of the data
+     * @param signature Signature of the data
+     * @return magicValue Magic value if the signature is valid or invalid id / invalid time range
+     */
     function isValidSignature(bytes32 hash, bytes calldata signature) external view returns (bytes4 magicValue) {
         if (signature.length > 0) {
             (uint256 _validationData, bool sigValid) = _isValidSignature(hash, signature);
@@ -38,6 +44,13 @@ abstract contract EIP1271Manager is Auth, OwnerManager {
         }
     }
 
+    /**
+     * @notice Verify if the signature is valid
+     * @param hash Hash of the data
+     * @param signature Signature of the data
+     * @return validationData Validation data
+     * @return isValid Signature is valid or not
+     */
     function _isValidSignature(bytes32 hash, bytes calldata signature)
         internal
         view

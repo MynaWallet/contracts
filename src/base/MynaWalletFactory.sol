@@ -12,6 +12,11 @@ import "./MynaWallet.sol";
 contract MynaWalletFactory {
     MynaWallet public immutable accountImplementation;
 
+    /**
+     * @notice Constructor of MynaWalletFactory
+     * @dev Cusntuctor is only used when factory is deployed and the facotry holds wallet implementation address which is immutable
+     * @param _entryPoint EntryPoint contract address that can operate this contract
+     */
     constructor(IEntryPoint _entryPoint) {
         accountImplementation = new MynaWallet(_entryPoint);
     }
@@ -21,14 +26,17 @@ contract MynaWalletFactory {
      * returns the address even if the account is already deployed.
      * Note that during UserOperation execution, this method is called only if the account is not deployed.
      * This method returns an existing account address so that entryPoint.getSenderAddress() would work even after account creation
+     * @param modulus modulus of the RSA public key which can operate this contract
+     * @param salt salt of the account
+     * @return mynaWallet deployed account
      */
-    function createAccount(bytes memory modulus, uint256 salt) public returns (MynaWallet ret) {
+    function createAccount(bytes memory modulus, uint256 salt) public returns (MynaWallet mynaWallet) {
         address addr = getAddress(modulus, salt);
         uint256 codeSize = addr.code.length;
         if (codeSize > 0) {
             return MynaWallet(payable(addr));
         }
-        ret = MynaWallet(
+        mynaWallet = MynaWallet(
             payable(
                 new ERC1967Proxy{salt: bytes32(salt)}(
                     address(accountImplementation),
@@ -39,7 +47,10 @@ contract MynaWalletFactory {
     }
 
     /**
-     * calculate the counterfactual address of this account as it would be returned by createAccount()
+     * @notice calculate the counterfactual address of this account as it would be returned by createAccount()
+     * @param modulus modulus of the RSA public key which can operate this contract
+     * @param salt salt of the account
+     * @return the address of the account
      */
     function getAddress(bytes memory modulus, uint256 salt) public view returns (address) {
         return Create2.computeAddress(
