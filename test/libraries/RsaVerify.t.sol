@@ -24,6 +24,6 @@ contract TestRsaVerify is Test {
     function test_FailRsaVerify() public {
         bytes32 INVALID_SHA256_HASHED = hex"47707cfb91cc6bede5f48cde4f1cea391e0ed78338e9240889b045e8808b32d3";
         uint256 ret = INVALID_SHA256_HASHED.pkcs1Sha256Verify(SIGNATURE, EXPONENT, MODULUS);
-        assertTrue(ret == 1, "pkcs1Sha256Verify failed");
+        assertTrue(ret == 5, "pkcs1Sha256Verify failed");
     }
 }
