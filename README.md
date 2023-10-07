@@ -70,7 +70,14 @@ forge test --gas-report
 
 By executing the script below, you can deploy the Factory Contract of MynaWallet. You can change the network to which you deploy by changing `rpc-url` and `etherscan-api-key`.
 
-```bash
-forge script script/Deploy.s.sol:DeployFactory --broadcast --rpc-url ${GOERLI_RPC_URL} --verify --etherscan-api-key ${GOERLI_SCAN_API_KEY}
+### Factory
 
+```bash
+forge script script/Deploy.s.sol:DeployFactory --broadcast --rpc-url ${SEPOLIA_RPC_URL} --verify --etherscan-api-key ${SEPOLIA_SCAN_API_KEY}
+```
+
+### Paymaster
+
+```bash
+forge script script/Deploy.s.sol:DeployPaymaster --broadcast --rpc-url ${SEPOLIA_RPC_URL} --verify --etherscan-api-key ${SEPOLIA_SCAN_API_KEY}
 ```
