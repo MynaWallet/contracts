@@ -16,14 +16,14 @@ contract TestRsaVerify is Test {
     bytes internal constant MODULUS =
         hex"8f6047064f400fd2ff80ad6569c2cffc238079e2cb18648305a59b9f1f389730f9bf9b5e3e436f88065c06241c7189ba43b6adbe5ec7a979d4b42f2a450cd19e8075e5a817b04328a0d16ebfcb6bc09a96020217af6218f3765dbc129131edd004472ab45908bf02ec35b7c044e1c900f7df179fc19c94835802e58c432bc73cee54148a6f24d7316cca195791c87e07e85b07f80b71ddc15b9b053e6f0265a8e81c27c7546dea38cbb951ca71c384892b81df12c8cb0444f9e04d24d0d3323fa857075be26746f4b731a186a51cec24151597b9d31c9ef78db83f27ef0d973d4d2a2d8a9093c7118bf86322603a17d7814a05f6150963b72a275f645a099319";
 
-    function testSuccessRsaVerify() public {
+    function test_SuccessRsaVerify() public {
         uint256 ret = SHA256_HASHED.pkcs1Sha256Verify(SIGNATURE, EXPONENT, MODULUS);
         assertTrue(ret == 0, "pkcs1Sha256Verify failed");
     }
 
-    function testFailRsaVerify() public {
+    function test_FailRsaVerify() public {
         bytes32 INVALID_SHA256_HASHED = hex"47707cfb91cc6bede5f48cde4f1cea391e0ed78338e9240889b045e8808b32d3";
         uint256 ret = INVALID_SHA256_HASHED.pkcs1Sha256Verify(SIGNATURE, EXPONENT, MODULUS);
-        assertTrue(ret == 1, "pkcs1Sha256Verify failed");
+        assertTrue(ret == 5, "pkcs1Sha256Verify failed");
     }
 }
