@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "lint": "npx solhint 'src/**/*.sol' 'test/**/*.sol'",
+    "lint:fix": "npx solhint --fix 'src/**/*.sol' 'test/**/*.sol'"
+  },
+  "devDependencies": {
+    "solhint": "^3.6.2"
+  }
+}
